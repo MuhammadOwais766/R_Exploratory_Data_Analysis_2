@@ -1,0 +1,220 @@
+---
+title: "Exploratory Data Analysis"
+author: "Owais"
+date: "2025-04-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+# Exploratory Data Analysis
+
+This report performs exploratory data analysis on the `diamonds` and `faithful` datasets from the `ggplot2` package. We'll examine distributions of key variables, identify patterns, and handle outliers.
+
+## Loading Required Packages
+
+```{r packages}
+library(tidyverse)
+```
+
+## 1. Diamonds Dataset Exploration
+
+### Initial Data Inspection
+
+```{r glimpse}
+glimpse(diamonds)
+```
+
+The dataset contains `r nrow(diamonds)` observations with `r ncol(diamonds)` variables, including both categorical and continuous variables.
+
+### Categorical Variable Analysis: Cut Quality
+
+#### Bar Plot of Cut Categories
+
+```{r cut_barplot}
+ggplot(diamonds) + 
+  geom_bar(mapping = aes(x = cut)) +
+  labs(title = "Distribution of Diamond Cut Quality",
+       x = "Cut Quality",
+       y = "Count") +
+  theme_minimal()
+```
+
+#### Frequency Table of Cut Categories
+
+```{r cut_count}
+diamonds %>% 
+  count(cut) %>% 
+  arrange(desc(n)) %>% 
+  knitr::kable(caption = "Frequency of Diamond Cut Categories")
+```
+
+### Continuous Variable Analysis: Carat Weight
+
+#### Histogram with 0.5 Carat Bins
+
+```{r carat_hist1}
+ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x = carat), binwidth = 0.5) +
+  labs(title = "Diamond Carat Weight Distribution",
+       subtitle = "Bin width = 0.5 carats",
+       x = "Carat Weight",
+       y = "Count") +
+  theme_minimal()
+```
+
+#### Detailed Histogram with 0.1 Carat Bins
+
+```{r carat_hist2}
+ggplot(diamonds) + 
+  geom_histogram(aes(x = carat), binwidth = 0.1) +
+  labs(title = "Detailed Diamond Carat Weight Distribution",
+       subtitle = "Bin width = 0.1 carats",
+       x = "Carat Weight",
+       y = "Count") +
+  theme_minimal()
+```
+
+#### Broad Overview with 1.0 Carat Bins
+
+```{r carat_hist3}
+ggplot(diamonds) + 
+  geom_histogram(aes(x = carat), binwidth = 1.0) +
+  labs(title = "Broad Diamond Carat Weight Distribution",
+       subtitle = "Bin width = 1.0 carats",
+       x = "Carat Weight",
+       y = "Count") +
+  theme_minimal()
+```
+
+#### Binned Frequency Count
+
+```{r carat_binned}
+diamonds %>% 
+  count(cut_width(carat, 0.5)) %>% 
+  knitr::kable(caption = "Frequency Count by 0.5 Carat Bins")
+```
+
+### Analyzing a Subset Without Outliers
+
+Create a subset with diamonds under 3 carats to remove outliers:
+
+```{r small_subset}
+small <- diamonds %>% filter(carat < 3)
+```
+
+#### Detailed Histogram of Subset
+
+```{r small_hist}
+ggplot(data = small, mapping = aes(x = carat)) + 
+  geom_histogram(binwidth = 0.1) +
+  labs(title = "Carat Distribution (Diamonds < 3 carats)",
+       x = "Carat Weight",
+       y = "Count") +
+  theme_minimal()
+```
+
+#### Frequency Polygon by Cut Quality
+
+```{r freqpoly}
+ggplot(data = small, mapping = aes(x = carat, colour = cut)) + 
+  geom_freqpoly(binwidth = 0.1) +
+  labs(title = "Carat Distribution by Cut Quality",
+       x = "Carat Weight",
+       y = "Count") +
+  theme_minimal()
+```
+
+#### High-Resolution Histogram (0.01 carat bins)
+
+```{r tiny_bins}
+ggplot(data = small, mapping = aes(x = carat)) + 
+  geom_histogram(binwidth = 0.01) +
+  labs(title = "High-Resolution Carat Distribution",
+       subtitle = "Bin width = 0.01 carats",
+       x = "Carat Weight",
+       y = "Count") +
+  theme_minimal()
+```
+
+### Analyzing the 'y' Variable (Width in mm)
+
+#### Initial Histogram
+
+```{r y_hist1}
+ggplot(data = diamonds) + 
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5) +
+  labs(title = "Distribution of Diamond Width (y)",
+       x = "Width (mm)",
+       y = "Count") +
+  theme_minimal()
+```
+
+#### Zoomed-In Histogram
+
+```{r y_hist2}
+ggplot(data = diamonds) + 
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5) +
+  coord_cartesian(ylim = c(0, 50)) +
+  labs(title = "Zoomed Distribution of Diamond Width (y)",
+       subtitle = "Y-axis limited to 50 counts",
+       x = "Width (mm)",
+       y = "Count") +
+  theme_minimal()
+```
+
+#### Identifying Outliers
+
+```{r outliers}
+outliers <- diamonds %>% 
+  filter(y < 3 | y > 20) %>% 
+  select(price, x, y, z) %>% 
+  arrange(y)
+
+knitr::kable(outliers, caption = "Outliers in Diamond Width (y)")
+```
+
+## 2. Faithful Dataset Exploration
+
+### Initial Data Inspection
+
+```{r faithful_glimpse}
+glimpse(faithful)
+```
+
+### Eruption Duration Analysis
+
+```{r faithful_hist}
+ggplot(data = faithful, mapping = aes(x = eruptions)) + 
+  geom_histogram(binwidth = 0.25) +
+  labs(title = "Old Faithful Eruption Duration Distribution",
+       x = "Eruption Duration (minutes)",
+       y = "Count") +
+  theme_minimal()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Conclusion
+
+This exploratory analysis revealed:
+- The distribution of diamond characteristics
+- Patterns in carat weights
+- Outliers in diamond dimensions
+- Bimodal distribution in Old Faithful eruption times
+
+Further analysis could investigate relationships between variables (e.g., carat vs. price).
